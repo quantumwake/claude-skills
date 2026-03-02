@@ -4,7 +4,7 @@ Manually write or update a session diary entry. Note: logging also happens autom
 
 All logs are centralized in:
 ```
-{{SESSION_DIR}}/<repo-name>/YYYY-MM-DD.md
+{{KNOWLEDGE_DIR}}/sessions/<repo-name>/YYYY-MM-DD.md
 ```
 
 Determine `<repo-name>` from `git rev-parse --show-toplevel` (just the directory name). Create the directory if it doesn't exist.
@@ -55,7 +55,7 @@ Each day gets one file: `YYYY-MM-DD.md`. **Append** new entries — never overwr
 
 ## Index
 
-After writing, update `{{SESSION_DIR}}/INDEX.md`:
+After writing, update `{{KNOWLEDGE_DIR}}/sessions/INDEX.md`:
 
 ```markdown
 | Date | Repo | Topic | Summary |

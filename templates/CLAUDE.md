@@ -17,12 +17,12 @@ Do NOT wait for the user to ask. Log as you go — multiple entries per session 
 All session logs go to a central docs repo, organized by repo name:
 
 ```
-{{SESSION_DIR}}/<repo-name>/YYYY-MM-DD.md
+{{KNOWLEDGE_DIR}}/sessions/<repo-name>/YYYY-MM-DD.md
 ```
 
 1. Determine the current repo name from `git rev-parse --show-toplevel` (just the directory name, e.g., `my-project`)
 2. If not in a git repo, use the current directory name
-3. Write to `{{SESSION_DIR}}/<repo-name>/YYYY-MM-DD.md`
+3. Write to `{{KNOWLEDGE_DIR}}/sessions/<repo-name>/YYYY-MM-DD.md`
 4. Create the directory if it doesn't exist
 5. **Append** to the file if it already exists — never overwrite
 
@@ -58,7 +58,7 @@ All session logs go to a central docs repo, organized by repo name:
 
 ## Index
 
-After writing an entry, update `{{SESSION_DIR}}/INDEX.md` with a one-line summary row:
+After writing an entry, update `{{KNOWLEDGE_DIR}}/sessions/INDEX.md` with a one-line summary row:
 
 ```markdown
 | Date | Repo | Topic | Summary |

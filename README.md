@@ -15,8 +15,12 @@ The installer will prompt you for two paths:
 
 | Variable | What it is | Example |
 |----------|-----------|---------|
-| `SESSION_DIR` | Where `/log` writes session diaries | `~/docs/sessions` |
+| `KNOWLEDGE_DIR` | Parent directory for sessions and docs | `~/docs` |
 | `WORKSPACE_DIR` | Root directory containing your projects | `~/Development/myorg` |
+
+Derived paths (automatic):
+- `$KNOWLEDGE_DIR/sessions/` — where `/log` writes session diaries
+- `$KNOWLEDGE_DIR/docs/` — where `/docs` writes project documentation
 
 These are saved to `.env` (gitignored) so re-running the installer is instant.
 
@@ -27,6 +31,7 @@ Commands are copied to `~/.claude/commands/` with your paths substituted in:
 | Command | Description |
 |---------|-------------|
 | `/log` | Write session diary entries (auto or manual) |
+| `/docs` | Generate and update project documentation |
 | `/ship` | Stage, commit, push, and version bump |
 | `/build` | Auto-detect and build any project (Go, Python, Node) |
 | `/test` | Auto-detect and run tests (go test, pytest, vitest) |
@@ -60,7 +65,7 @@ Removes installed commands from `~/.claude/commands/`. Does not touch `CLAUDE.md
 
 ## Customizing
 
-**Add a new command:** Create a `.md` file in `commands/`. Use `{{SESSION_DIR}}` and `{{WORKSPACE_DIR}}` as placeholders — they're replaced during install.
+**Add a new command:** Create a `.md` file in `commands/`. Use `{{KNOWLEDGE_DIR}}`, `{{SESSION_DIR}}`, `{{DOCS_DIR}}`, and `{{WORKSPACE_DIR}}` as placeholders — they're replaced during install.
 
 **Edit an existing command:** Modify the file in `commands/`, then re-run `./install.sh`.
 
@@ -72,6 +77,7 @@ Removes installed commands from `~/.claude/commands/`. Does not touch `CLAUDE.md
 claude-skills/
 ├── commands/           # Slash command templates
 │   ├── log.md          # /log - session diary
+│   ├── docs.md         # /docs - project documentation
 │   ├── build.md        # /build - project builder
 │   ├── ship.md         # /ship - commit & push
 │   ├── test.md         # /test - test runner

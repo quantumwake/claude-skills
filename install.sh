@@ -29,14 +29,14 @@ if [[ ! -f "$ENV_FILE" ]]; then
     info "No .env file found. Let's configure your paths."
     echo ""
 
-    # Session directory
-    read -rp "  Session log directory (e.g., /home/you/docs/sessions): " SESSION_DIR
-    while [[ -z "$SESSION_DIR" ]]; do
-        echo "  Session directory is required (this is where /log writes diary entries)."
-        read -rp "  Session log directory: " SESSION_DIR
+    # Knowledge directory (parent for sessions + docs)
+    read -rp "  Knowledge directory (e.g., /home/you/docs): " KNOWLEDGE_DIR
+    while [[ -z "$KNOWLEDGE_DIR" ]]; do
+        echo "  Knowledge directory is required (sessions and docs are stored here)."
+        read -rp "  Knowledge directory: " KNOWLEDGE_DIR
     done
     # Expand ~ if used
-    SESSION_DIR="${SESSION_DIR/#\~/$HOME}"
+    KNOWLEDGE_DIR="${KNOWLEDGE_DIR/#\~/$HOME}"
 
     # Workspace directory
     read -rp "  Workspace directory (e.g., /home/you/Development/myorg): " WORKSPACE_DIR
@@ -48,7 +48,7 @@ if [[ ! -f "$ENV_FILE" ]]; then
 
     # Write .env
     cat > "$ENV_FILE" <<EOF
-SESSION_DIR=$SESSION_DIR
+KNOWLEDGE_DIR=$KNOWLEDGE_DIR
 WORKSPACE_DIR=$WORKSPACE_DIR
 EOF
     ok "Created .env with your paths"
@@ -60,9 +60,23 @@ fi
 # shellcheck source=/dev/null
 source "$ENV_FILE"
 
+# Migrate legacy SESSION_DIR → KNOWLEDGE_DIR
+if [[ -n "${SESSION_DIR:-}" && -z "${KNOWLEDGE_DIR:-}" ]]; then
+    # SESSION_DIR was like /path/to/docs/sessions — strip trailing /sessions
+    KNOWLEDGE_DIR="${SESSION_DIR%/sessions}"
+    warn "Migrated SESSION_DIR → KNOWLEDGE_DIR=$KNOWLEDGE_DIR"
+    # Rewrite .env with new variable
+    sed -i.bak 's|^SESSION_DIR=.*|KNOWLEDGE_DIR='"$KNOWLEDGE_DIR"'|' "$ENV_FILE"
+    rm -f "$ENV_FILE.bak"
+fi
+
+# Derive paths
+SESSION_DIR="$KNOWLEDGE_DIR/sessions"
+DOCS_DIR="$KNOWLEDGE_DIR/docs"
+
 # Validate required vars
-if [[ -z "${SESSION_DIR:-}" ]]; then
-    err "SESSION_DIR is not set in .env"
+if [[ -z "${KNOWLEDGE_DIR:-}" ]]; then
+    err "KNOWLEDGE_DIR is not set in .env"
     exit 1
 fi
 
@@ -71,15 +85,22 @@ if [[ -z "${WORKSPACE_DIR:-}" ]]; then
     exit 1
 fi
 
+info "KNOWLEDGE_DIR = $KNOWLEDGE_DIR"
 info "SESSION_DIR   = $SESSION_DIR"
+info "DOCS_DIR      = $DOCS_DIR"
 info "WORKSPACE_DIR = $WORKSPACE_DIR"
 echo ""
 
-# --- Step 2: Create session directory if needed ---
+# --- Step 2: Create directories if needed ---
 
 if [[ ! -d "$SESSION_DIR" ]]; then
     mkdir -p "$SESSION_DIR"
     ok "Created session directory: $SESSION_DIR"
+fi
+
+if [[ ! -d "$DOCS_DIR" ]]; then
+    mkdir -p "$DOCS_DIR"
+    ok "Created docs directory: $DOCS_DIR"
 fi
 
 # --- Step 3: Install commands ---
@@ -96,7 +117,9 @@ for src in "$SCRIPT_DIR/commands/"*.md; do
 
     # Process template variables
     processed=$(sed \
+        -e "s|{{KNOWLEDGE_DIR}}|$KNOWLEDGE_DIR|g" \
         -e "s|{{SESSION_DIR}}|$SESSION_DIR|g" \
+        -e "s|{{DOCS_DIR}}|$DOCS_DIR|g" \
         -e "s|{{WORKSPACE_DIR}}|$WORKSPACE_DIR|g" \
         "$src")
 
@@ -126,7 +149,9 @@ CLAUDE_MD="$CLAUDE_DIR/CLAUDE.md"
 install_claude_md() {
     local processed
     processed=$(sed \
+        -e "s|{{KNOWLEDGE_DIR}}|$KNOWLEDGE_DIR|g" \
         -e "s|{{SESSION_DIR}}|$SESSION_DIR|g" \
+        -e "s|{{DOCS_DIR}}|$DOCS_DIR|g" \
         -e "s|{{WORKSPACE_DIR}}|$WORKSPACE_DIR|g" \
         "$SCRIPT_DIR/templates/CLAUDE.md")
 
@@ -181,5 +206,5 @@ for src in "$SCRIPT_DIR/commands/"*.md; do
     echo "    /$name  —  $desc"
 done
 echo ""
-echo "  Run 'claude' and use /log, /build, /test, /ship, etc."
+echo "  Run 'claude' and use /log, /docs, /build, /test, /ship, etc."
 echo ""
