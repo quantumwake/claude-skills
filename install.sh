@@ -127,7 +127,7 @@ for src in "$SCRIPT_DIR/commands/"*.md; do
     if [[ -f "$dest" ]]; then
         existing=$(cat "$dest")
         if [[ "$processed" == "$existing" ]]; then
-            ((skipped++))
+            skipped=$((skipped + 1))
             continue
         fi
         warn "Overwriting existing command: $name"
@@ -135,7 +135,7 @@ for src in "$SCRIPT_DIR/commands/"*.md; do
 
     echo "$processed" > "$dest"
     ok "Installed $name"
-    ((installed++))
+    installed=$((installed + 1))
 done
 
 echo ""
