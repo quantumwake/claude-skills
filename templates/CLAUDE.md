@@ -20,11 +20,35 @@ All session logs go to a central docs repo, organized by repo name:
 {{KNOWLEDGE_DIR}}/sessions/<repo-name>/YYYY-MM-DD.md
 ```
 
-1. Determine the current repo name from `git rev-parse --show-toplevel` (just the directory name, e.g., `my-project`)
-2. If not in a git repo, use the current directory name
-3. Write to `{{KNOWLEDGE_DIR}}/sessions/<repo-name>/YYYY-MM-DD.md`
-4. Create the directory if it doesn't exist
-5. **Append** to the file if it already exists — never overwrite
+### Repo detection
+
+Before writing a log entry, identify ALL repos touched since the last log:
+
+1. Collect every file path read, created, modified, or deleted in this work chunk
+2. For each path: if under `{{WORKSPACE_DIR}}/`, repo name = first directory component after it; otherwise `git rev-parse --show-toplevel` basename; fallback to parent dir name
+3. Deduplicate into a set. Designate one as **primary** (most significant changes), rest as **secondary**
+
+### Single-repo work (most common)
+
+Write to `{{KNOWLEDGE_DIR}}/sessions/<repo>/YYYY-MM-DD.md` as usual:
+
+1. Create the directory if it doesn't exist
+2. **Append** to the file if it already exists — never overwrite
+
+### Multi-repo work
+
+Full entry → primary repo's session file. For each secondary repo, append a cross-reference stub:
+
+```markdown
+## [HH:MM] <same topic>
+
+> Cross-repo work — primary log in [`<primary-repo>`](../<primary-repo>/YYYY-MM-DD.md)
+
+**Changes in this repo**:
+- <1-3 bullets listing only what changed in THIS repo>
+
+---
+```
 
 ## Entry format
 
@@ -64,6 +88,8 @@ After writing an entry, update `{{KNOWLEDGE_DIR}}/sessions/INDEX.md` with a one-
 | Date | Repo | Topic | Summary |
 ```
 
+For multi-repo work, add one row per repo. Primary row gets full summary. Secondary rows: `<brief note> (primary: <primary-repo>)`
+
 This is the global index across all repos — one place to see everything.
 
 ## Guidelines
@@ -74,3 +100,5 @@ This is the global index across all repos — one place to see everything.
 - Capture rejected ideas and reasoning — that's the most valuable part
 - Omit sections that don't apply (e.g., skip "Changes" if nothing was modified)
 - Don't log trivial exchanges (greetings, typo fixes, quick questions)
+- Working across repos → full entry under primary repo, cross-reference stubs under each secondary repo
+- Cross-reference stubs should list only what changed in THAT repo, not the full story

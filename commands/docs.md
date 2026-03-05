@@ -6,6 +6,7 @@ Generate or update project documentation. Scans the codebase and writes structur
 - `/docs README` — update only README
 - `/docs ARCHITECTURE` — update only that category
 - `/docs <repo-name>` — target a specific repo in `{{WORKSPACE_DIR}}`
+- `/docs --touched` — generate/update docs for ALL repos modified in the current session
 
 ## Output location
 
@@ -22,6 +23,16 @@ Generate or update project documentation. Scans the codebase and writes structur
 - If `$ARGUMENTS` matches a directory in `{{WORKSPACE_DIR}}`, use that as the target repo
 - Otherwise, use `git rev-parse --show-toplevel` to detect the current repo
 - Extract `<repo-name>` as the directory basename
+
+### 1b. Multi-repo mode (`--touched`)
+
+When invoked with `--touched`:
+
+1. Scan the conversation for file paths that were read, created, modified, or deleted
+2. For each path: if under `{{WORKSPACE_DIR}}/`, repo name = first directory component after it; otherwise `git rev-parse --show-toplevel` basename; fallback to parent dir name
+3. Deduplicate into a list of distinct repo names
+4. Run the full docs workflow (steps 2-8) for each repo sequentially
+5. Report a combined summary listing all repos and their updated doc files
 
 ### 2. Load existing docs
 
@@ -84,6 +95,21 @@ Updated docs for <repo-name>:
   - ...
 Location: {{DOCS_DIR}}/<repo-name>/
 Delta: <N> commits since last sync
+```
+
+For multi-repo mode (`--touched`), report a combined summary:
+```
+Updated docs for 3 repos:
+
+  alethic-ism-file-source:
+    - README.md (created)
+    - ARCHITECTURE.md (created)
+
+  alethic-ism-core-go:
+    - API.md (updated)
+
+  alethic-ism-vault-api:
+    - README.md (updated)
 ```
 
 ## Guidelines
